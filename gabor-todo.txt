@@ -1,12 +1,7 @@
-fix usa
-fix russia
 set global bounds
-slow initial rendering
-store stuff onto website
 currency data collection
-expand abbreviation for stocks 
+expand abbreviation for stocks
 stocks arrow no work
 Change Plague Tracker: Add "info" to NAVBAR
 experimental prediction page
 preset diff color schemes
-production BUMP -- last

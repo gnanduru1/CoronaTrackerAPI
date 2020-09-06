@@ -6,7 +6,7 @@ from collections import OrderedDict
 HEADERS = "Province/State,Country/Region,Lat,Long,Date,Confirmed,Dead,Recovered"
 import simplejson
 convertDict = {'Dominican Rep.': 'Dominican Republic',
- 'Greenland-Denmark': 'Greenland',
+ 'Greenland-Denmark': '-Greenland',
  'Taiwan*': 'Taiwan',
  'Central African Rep.': 'Central African Republic',
  "Cote d'Ivoire": 'Ivory Coast',
@@ -140,13 +140,12 @@ def init():
                 newDict[place.replace("'", '%')] = bigDict[place]
     print("Initialized",len(newDict),"regions")
     e = OrderedJsonEncoder(newDict)
-    f = open('global.json', 'w')
+    print(newDict['Canada'])
+    print(newDict['-Canada'])
     file_str = e.encode(newDict).replace("'","%").replace("NaN","0")
-    print(file_str.count("Canada"))
-    f.write(file_str)
-    f.close()
 
-    f = open('global2.json', 'w')
+
+    f = open('global.json', 'w')
     f.write(file_str)
     f.close()
                 
@@ -288,7 +287,7 @@ def bigCountries():
         json.dump(list(withRegions), f)
 
 def convert():
-    for i in ['asia.csv', 'europe_data.csv', 'france_data.csv', 'global.csv', 'italy_data.csv', 'spain_data.csv', 'uk_data.csv', 'usastates.csv', 'who_confirmed.csv']:
+    for i in ['color.json', 'status.json', 'global.json']:
         text = open(i, 'r').read()
         for j in convertDict:
             text = text.replace(j, convertDict[j])
@@ -299,10 +298,13 @@ def convert():
 
 def customConfig():
     customDict = {}
+    convertDict['Bissau'] = 'Guinea Bissau'
+    convertDict['Leste'] = 'East Timor'
     with open("countries.json", 'r') as f:
         lst = json.load(f)
     # well not really a lst anymore
     lst = set(lst) | {i[:-5] for i in os.listdir('countries2')}
+    lst = {convertDict[i] if i in convertDict else i for i in lst}
     for i in lst:
         try:
             with open("countries2/"+i+".json", 'r') as f:
@@ -316,8 +318,10 @@ def customConfig():
     customDict = {}
     with open("big_countries.json", 'r') as f:
         lst = json.load(f)
+    lst = {convertDict[i] if i in convertDict else i for i in lst}
     for i in lst:
         with open("big_countries/"+i+".json", 'r') as f:
             customDict[i] = json.load(f)
     with open('custom2.json', 'w') as f:
         json.dump(customDict,f)
+    del convertDict['Bissau']

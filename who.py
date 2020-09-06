@@ -2,13 +2,7 @@ import csv
 import requests
 
 confirmed_url = "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv"
-deaths_url = "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv"
-recovered_url = "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv"
 confirmed_file = 'who_confirmed.csv'
-deaths_file = 'time_series_covid19_deaths_global_narrow.csv'
-recovered_file = 'time_series_covid19_recovered_global_narrow.csv'
-
-
 def crawl():
     # Refresh CSV files from CDC
     # NOTE: parse_csv is outdated as of 3/26
@@ -46,14 +40,6 @@ def crawl():
         for row in newArray:
             spamwriter.writerow(row) 
     print(confirmed_file, "downloaded")
-    # TODO: implement below when data collection team catches up
-
-    # writer = open(deaths_file, "w")
-    # writer.write(requests.get(deaths_url).text)
-    # writer.close()
-    # writer = open(recovered_file, "w")
-    # writer.write(requests.get(recovered_url).text)
-    # writer.close()
 
 if __name__ == '__main__':
     crawl()

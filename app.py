@@ -101,13 +101,14 @@ def refresh():
     usacases.crawl()    
     econ.crawl()
     stocks.crawl()
-    process.convert() # do the convertDict name replacements immediately after downloads finish
     
     process.init()    
     process.bigCountries() # once bigdict is made, get all the countries where regional data is available
     process.status()
     color.crawl() # dependent on status.csv
     process.toJSON() # after everything is done convert to json
+    process.convert() # fix names of countries in some json files
+
     process.customConfig() # configure custom.json countries-in-one endpoint
     return "Success"
 
