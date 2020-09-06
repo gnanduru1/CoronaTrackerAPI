@@ -168,24 +168,24 @@ def write_csv(filename, data):
 
 def crawl():
     italy_data = parse_csv_italy(italy_url)
-    write_csv("italy_data.csv", italy_data)
-    print("italy_data.csv downloaded")
 
     uk_data = parse_csv_uk(uk_url)
-    write_csv("uk_data.csv", uk_data)
-    print("uk_data.csv downloaded")
 
     spain_data = parse_csv_spain(spain_url)
-    write_csv("spain_data.csv", spain_data)
-    print("spain_data.csv downloaded")
 
     france_data = parse_csv_france(france_url)
-    write_csv("france_data.csv", france_data)
-    print("france_data.csv downloaded")
-
+	
     europe_data = italy_data + uk_data + spain_data + france_data
-    write_csv('europe_data.csv', europe_data)
-    print('europe_data.csv downloaded')
+
+    toret = {}
+    for row in europe_data:
+        key = row[0] + '-' + row[1]
+        if key not in toret:
+            toret[key] = {}
+        toret[key][row[4]] = row[5]
+
+    return toret
+
 
 if __name__ == '__main__':
     crawl()

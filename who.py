@@ -34,12 +34,16 @@ def crawl():
     for row in csvArray[1:]:
         for column in range(4,len(row)):
             newArray.append(row[:4]+[dates[column-4]]+[row[column]])
+    
+    toret = {}
+    for row in newArray[1:]:
+        key = row[0] + '-' + row[1]
+        if key not in toret:
+            toret[key] = {}
+        toret[key][row[4]] = row[5]
 
-    with open(confirmed_file, 'w', newline='') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=',')
-        for row in newArray:
-            spamwriter.writerow(row) 
-    print(confirmed_file, "downloaded")
+    return toret
+
 
 if __name__ == '__main__':
     crawl()

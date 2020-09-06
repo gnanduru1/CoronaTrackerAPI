@@ -169,15 +169,17 @@ def crawl():
 
     for state, date in DATE:
         STATE[state] += [(state, 'US', LONLAT[state][0], LONLAT[state][1], date, max(DATE[(state, date)][0]), max(DATE[(state, date)][1]), 0)]
+    
+    toret = {}
+    for key in STATE:
+        for row in STATE[key][:-1]:
+            key = row[0] + '-' + row[1]
+            if key not in toret:
+                toret[key] = {}
+            toret[key][row[4]] = row[5]
+    print(toret)
+    return toret
 
-    with open('usastates.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(('State', 'Country', 'Latitude', 'Longitude', 'Date', 'Confirmed', 'Deaths', 'Recovered'))
-        for state in STATE:
-            for tpls in STATE[state]:
-                if "American Samoa" in tpls: continue
-                writer.writerow(tpls)
-    print('usastates.csv downloaded')
 
 if __name__ == '__main__':
     crawl()

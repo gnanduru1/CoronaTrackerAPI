@@ -81,23 +81,15 @@ def crawl():
             location = geolocator.geocode(region)
             LATLON[key] = (location.latitude, location.longitude)
         REGIONS[key] += [(*key, LATLON[key][0], LATLON[key][1], date, values[3], values[5], values[4])]
+    
+    toret = {}
+    for state in REGIONS:
+        key = state[0] + '-' + state[1]
+        toret[key] = {}
+        for tup in REGIONS[state]:
+            toret[key][tup[4]] = tup[5]
 
-    with open('asia.csv', 'w', newline='') as csvfile:
-        with open('global.csv', 'w', newline='') as globalfile:
-            asiawriter = csv.writer(csvfile)
-            globalwriter = csv.writer(globalfile)
-            asiawriter.writerow(
-                ('State', 'Country', 'Latitude', 'Longitude', 'Date', 'Confirmed', 'Deaths', 'Recovered'))
-            globalwriter.writerow(
-                ('State', 'Country', 'Latitude', 'Longitude', 'Date', 'Confirmed', 'Deaths', 'Recovered'))
-            for state in REGIONS:
-                if state[-1] in ASIA:
-                    for tuples in REGIONS[state]:
-                        asiawriter.writerow(tuples)
-                        globalwriter.writerow(tuples)
-                else:
-                    for tuples in REGIONS[state]:
-                        globalwriter.writerow(tuples)
+    return toret
 
 
 if __name__ == '__main__':
