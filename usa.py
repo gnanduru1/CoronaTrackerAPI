@@ -95,7 +95,7 @@ def crawl():
         elif date not in dct[province] or 'A' in row[12]:
             updated += 1
             dct[province][date] = int(row[2])
-    return dct
+    return [dct, {'United States of America'}, {'United States of America'}]
 
 
 if __name__ == '__main__':

@@ -52,7 +52,7 @@ def parse_csv_spain(url):
         cases = int(float(row[2]))
 
         date = row[1]
-        province = row[0]+'-Spain'
+        province = row[0]
 
         if province in dct: dct[province][date] = cases
         else: dct[province] = {date: cases}
@@ -77,13 +77,16 @@ def parse_csv_france(url):
     return dct
     
 def crawl():
+    print(parse_csv_spain(spain_url).keys())
+    exit()
+
     all_data = {}
     all_data.update(parse_csv_italy(italy_url))
     all_data.update(parse_csv_uk(uk_url))
     all_data.update(parse_csv_spain(spain_url))
     all_data.update(parse_csv_france(france_url))
 
-    return all_data
+    return [all_data, {'France', 'Spain', 'Italy', 'United Kingdom'}, {'France', 'Spain', 'Italy', 'United Kingdom'}]
 
 if __name__ == '__main__':
     crawl()

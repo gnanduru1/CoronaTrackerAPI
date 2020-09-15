@@ -26,7 +26,7 @@ def parse_csv_india(url):
 def crawl():
     asiaDict = {}    
     asiaDict.update(parse_csv_india(india_url))
-    return asiaDict
-
+    return [asiaDict, {'India'}, {'India'}]
+    
 if __name__ == '__main__':
     crawl()
