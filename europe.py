@@ -1,6 +1,6 @@
-import requests
-import csv
+import requests, csv, json
 import re
+from io import StringIO
 
 italy_url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv"
 uk_url = "https://raw.githubusercontent.com/tomwhite/covid-19-uk-data/master/data/covid-19-cases-uk.csv"
@@ -10,182 +10,83 @@ departments_file = 'departments.txt'
 
 
 def parse_csv_italy(url):
-    with requests.Session() as s:
-        response = []
-        download = s.get(url)
+    with requests.get(url) as data:
+        csvreader = csv.reader(StringIO(data.text))    
+        csvreader.__next__() # Skip the top line with all the headers
+    dct = {}
+    for row in csvreader:
+        date = row[0][:10]
+        province = row[5]
+        cases = int(row[-2])
 
-        decoded_content = download.content.decode('utf-8')
-
-        cr = csv.reader(decoded_content.splitlines(), delimiter=',')
-        my_list = list(cr)
-        for row in my_list[1:]:
-            rowinfo = []
-            province = row[5]  # province
-
-            unformatted_date = row[0]
-            # reformat date
-            month = unformatted_date[5:7]
-            day = unformatted_date[8:10]
-            year = unformatted_date[0:4]
-            date = '{0}-{1}-{2}'.format(year,month,day) # date
-
-            country = row[1].replace('ITA', 'Italy')
-            
-            lat, lon = row[7], row[8]
-
-            if not lat or not lon: 
-                continue 
-            if lat == "0.0" and lon == "0.0":  # region hasn't been defined yet, dont add to list
-                continue
-            if row[9]:
-                confirmed = int(row[9])
-            else:
-                confirmed = 0
-
-            rowinfo = [province, country, lat, lon, date, confirmed]
-            response.append(rowinfo)  # add all rowinfo to list
-        return response
-
+        if province in dct: dct[province][date] = cases
+        else: dct[province] = {date: cases}
+    return dct
 
 def parse_csv_uk(url):
-    with requests.Session() as s:
-        response = []
-        download = s.get(url)
+    with requests.get(url) as data:
+        csvreader = csv.reader(StringIO(data.text))    
+        csvreader.__next__()
 
-        decoded_content = download.content.decode('utf-8')
+    dct = {}
+    for row in csvreader:
+        if row[4] == 'NaN': continue
+        cases = int(row[4])
 
-        cr = csv.reader(decoded_content.splitlines(), delimiter=',')
-        my_list = list(cr)
-        for row in my_list[1:]:
-            rowinfo = []
-            province = row[3]  # province
+        date = row[0]
+        province = row[3]
+        
 
-            unformatted_date = row[0]
-            # reformat date
-            month = unformatted_date[5:7]
-            day = unformatted_date[8:10]
-            year = unformatted_date[0:4]
-            date = '{0}-{1}-{2}'.format(year,month,day)  # date
-
-            country = row[1]
-
-            confirmed = row[4]
-            if ' ' in confirmed:
-                # for the ones that say (# to #)
-                confirmed = re.findall('^\d+', confirmed)[0]
-            confirmed = int(confirmed) if confirmed != 'NaN' and confirmed != '' else 'NaN'
-            rowinfo = [province, country, 'und', 'und', date, confirmed]
-            response.append(rowinfo)  # add all rowinfo to list
-        return response
-
-
+        if province in dct: dct[province][date] = cases
+        else: dct[province] = {date: cases}
+    return dct
+    
 def parse_csv_spain(url):
-    with requests.Session() as s:
-        response = []
-        download = s.get(url)
+    with requests.get(url) as data:
+        csvreader = csv.reader(StringIO(data.text))
+        csvreader.__next__()
 
-        decoded_content = download.content.decode('utf-8')
+    dct = {}
+    for row in csvreader:
+        if not row[2]: continue
+        cases = int(float(row[2]))
 
-        cr = csv.reader(decoded_content.splitlines(), delimiter=',')
-        my_list = list(cr)
-        for row in my_list[1:]:
-            rowinfo = []
-            province = row[0]  # province
+        date = row[1]
+        province = row[0]
 
-            unformatted_date = row[1]
-            # reformat date
-            month = unformatted_date[5:7]
-            day = unformatted_date[8:10]
-            year = unformatted_date[0:4]
-            date = '{0}-{1}-{2}'.format(year,month,day)  # date
-
-            country = 'Spain'
-
-            if row[2]:
-                # because this is a string with a decimal
-                confirmed = int(row[2].replace('.0', ''))
-            else:
-                continue  # no confirmed data so don't add to regioninfo
-
-            rowinfo = [province, country, 'und', 'und', date, confirmed]
-            response.append(rowinfo)  # add all rowinfo to list
-        return response
-
-
+        if province in dct: dct[province][date] = cases
+        else: dct[province] = {date: cases}
+    return dct
+    
 def parse_csv_france(url):
-    departmentLOOKUP = {}
-    # add department ids to lookup
-    with open(departments_file, 'r') as f:
-        for line in f:
-            line = line.rstrip()
-            departmentID = re.findall(r'\d+', line)[0]
-            province = re.findall(r' - [\w-]+', line)[0][3:]
-            departmentLOOKUP[departmentID] = province
+    regionLookup = {"01": "Ain", "02": "Aisne", "03": "Allier", "04": "Alpes-de-Haute-Provence", "05": "Hautes-Alpes", "06": "Alpes-Maritimes", "07": "Ardèche", "08": "Ardennes", "09": "Ariège", "10": "Aube", "11": "Aude", "12": "Aveyron", "13": "Bouches-du-Rhône", "14": "Calvados", "15": "Cantal", "16": "Charente", "17": "Charente-Maritime", "18": "Cher", "19": "Corrèze", "2A": "Corse-du-Sud", "2B": "Haute-Corse", "21": "Côte-d'Or", "22": "Côtes-d'Armor", "23": "Creuse", "24": "Dordogne", "25": "Doubs", "26": "Drôme", "27": "Eure", "28": "Eure-et-Loir", "29": "Finistère", "30": "Gard", "31": "Haute-Garonne", "32": "Gers", "33": "Gironde", "34": "Hérault", "35": "Ille-et-Vilaine", "36": "Indre", "37": "Indre-et-Loire", "38": "Isère", "39": "Jura", "40": "Landes", "41": "Loir-et-Cher", "42": "Loire - St", "43": "Haute-Loire", "44": "Loire-Atlantique", "45": "Loiret", "46": "Lot", "47": "Lot-et-Garonne", "48": "Lozère", "49": "Maine-et-Loire", "50": "Manche - St", "51": "Marne", "52": "Haute-Marne", "53": "Mayenne", "54": "Meurthe-et-Moselle", "55": "Meuse - Bar-le", "56": "Morbihan", "57": "Moselle", "58": "Nièvre", "59": "Nord", "60": "Oise", "61": "Orne", "62": "Pas-de-Calais", "63": "Puy de Dôme", "64": "Pyrénées-Atlantiques", "65": "Hautes-Pyrénées", "66": "Pyrénées-Orientales", "67": "Bas-Rhin", "68": "Haut-Rhin", "69": "Rhône", "70": "Haute-Saône", "71": "Saône-et-Loire", "72": "Sarthe", "73": "Savoie", "74": "Haute-Savoie", "75": "Paris", "76": "Seine-Maritime", "77": "Seine-et-Marne", "78": "Yvelines", "79": "Deux-Sèvres", "80": "Somme", "81": "Tarn", "82": "Tarn-et-Garonne", "83": "Var", "84": "Vaucluse", "85": "Vendeé", "86": "Vienne", "87": "Haute-Vienne", "88": "Vosges", "89": "Yonne", "90": "Territoire de Belfort", "91": "Essonne", "92": "Hauts-de-Seine", "93": "Seine-Saint-Denis", "94": "Val-de-Marne", "95": "Val-d'Oise", "971": "Guadeloupe", "972": "Martinique", "973": "Guyane", "974": "La-Reunion", "976": "Mayotte"}
+    
+    with requests.get(url) as data:
+        csvreader = csv.reader(StringIO(data.text), delimiter=';')    
+        csvreader.__next__()
 
-    with requests.Session() as s:
-        response = []
-        download = s.get(url)
-
-        decoded_content = download.content.decode('utf-8')
-
-        # THIS CSV USES SEMICOLONS INSTEAD OF COMMAS
-        cr = csv.reader(decoded_content.splitlines(), delimiter=';')
-        my_list = list(cr)
-        for row in my_list[1:]:
-            rowinfo = []
-            departmentID = row[0]
-            if departmentID in departmentLOOKUP:
-                province = departmentLOOKUP[departmentID]
-            else:
-                continue
-
-            unformatted_date = row[2]
-            # reformat date
-            month = unformatted_date[5:7]
-            day = unformatted_date[8:10]
-            year = unformatted_date[0:4]
-            date = '{0}-{1}-{2}'.format(year,month,day)  # date
-
-            country = 'France'
-            if row[3] and row[4]:
-                confirmed = int(row[3]) + int(row[4])  # hosp + rea
-            else:
-                continue
-
-            rowinfo = [province, country, 'und', 'und', date, confirmed]
-            response.append(rowinfo)  # add all rowinfo to list
-        return response
-
-
-def write_csv(filename, data):
-    fields = ['Province', 'Country', 'Lat', 'Lon', 'Date', 'Confirmed']
-    with open(filename, 'w', newline='') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        # writing the fields
-        csvwriter.writerow(fields)
-        csvwriter.writerows(data)
-
-
+    dct = {}
+    for row in csvreader:
+        if not row[0]:
+            continue
+        province = regionLookup[row[0]]
+        date = row[2]
+        cases = int(row[3])+int(row[4])
+        if province in dct: dct[province][date] = cases
+        else: dct[province] = {date: cases}
+    return dct
+    
 def crawl():
-    italy_data = parse_csv_italy(italy_url)
-    write_csv("italy_data.csv", italy_data)
-    print("italy_data.csv downloaded")
+    print(parse_csv_spain(spain_url).keys())
+    exit()
 
-    uk_data = parse_csv_uk(uk_url)
-    write_csv("uk_data.csv", uk_data)
-    print("uk_data.csv downloaded")
+    all_data = {}
+    all_data.update(parse_csv_italy(italy_url))
+    all_data.update(parse_csv_uk(uk_url))
+    all_data.update(parse_csv_spain(spain_url))
+    all_data.update(parse_csv_france(france_url))
 
-    spain_data = parse_csv_spain(spain_url)
-    write_csv("spain_data.csv", spain_data)
-    print("spain_data.csv downloaded")
-
-    france_data = parse_csv_france(france_url)
-    write_csv("france_data.csv", france_data)
-    print("france_data.csv downloaded")
-
-    europe_data = italy_data + uk_data + spain_data + france_data
-    write_csv('europe_data.csv', europe_data)
-    print('europe_data.csv downloaded')
+    return [all_data, {'France', 'Spain', 'Italy', 'United Kingdom'}, {'France', 'Spain', 'Italy', 'United Kingdom'}]
 
 if __name__ == '__main__':
     crawl()
