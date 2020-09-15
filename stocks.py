@@ -1,9 +1,5 @@
-import csv, requests
-#import lxml.html as lh
+import requests, json, re
 from datetime import date
-from os import path
-import json
-import re
 
 re_name = r'(?<=title=")(.*?)(?=")'
 re_country = r'(?<=\n)[\w ]+(?=.*</td>)'
