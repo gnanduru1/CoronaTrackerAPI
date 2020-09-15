@@ -3,7 +3,7 @@ import who, europe, asia, usa
 import econ, stocks, color
 from shutil import copyfile
 
-convertDict = {'Dominican Rep.': 'Dominican Republic',
+convertDictOld = {'Dominican Rep.': 'Dominican Republic',
  'Greenland-Denmark': '-Greenland',
  'Taiwan*': 'Taiwan',
  'Central African Rep.': 'Central African Republic',

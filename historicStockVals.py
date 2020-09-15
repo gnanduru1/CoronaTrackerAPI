@@ -1,4 +1,4 @@
-import csv, requests
+import requests, json
 import lxml.html as lh
 from datetime import date
 from os import path
@@ -8,7 +8,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
-from datetime import date
 
 indicies = ['The Global Dow', 'Dow Jones', 'NASDAQ 100', 'NASDAQ Composite', 'NYSE International 100', 'NYSE US 100', 
     'Russell 2000', 'S&P 500', 'IPC', 'S&P/TSX', 'VIX', 'U.S. Dollar Index', 'DAX', 'DivDAX', 'MDAX', 'TecDAX', 
@@ -66,11 +65,11 @@ try:
             if len(day) == 1: day = '0' + day
             d[1] = d[1][-4:] + '-' + month + '-' + day
             
-            if d[0] not in dct: dct[d[0]] = {d[1]:d[2]}
-            else: dct[d[0]][d[1]] = d[2]        
+            if d[0] not in dct: dct[d[0]] = {d[1]:float(d[2])}
+            else: dct[d[0]][d[1]] = float(d[2])
         count += 1
-except:
-    pass
+except Exception as err:
+    print(err)
 finally:
     with open(stock_file, 'w') as f:
         json.dump(dct, f)
