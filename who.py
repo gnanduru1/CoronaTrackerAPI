@@ -1,49 +1,27 @@
 import csv
 import requests
+from io import StringIO
+import time
+confirmed_url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 
-confirmed_url = "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv"
-confirmed_file = 'who_confirmed.csv'
 def crawl():
-    # Refresh CSV files from CDC
-    # NOTE: parse_csv is outdated as of 3/26
-    writer = open(confirmed_file, "w")
-    writer.write(requests.get(confirmed_url).text)
-    writer.close()
+    with requests.get(confirmed_url) as data:
+        csvreader = csv.reader(StringIO(data.text))
+    dates = csvreader.__next__()
+    who_dict = {}
+    for row in csvreader:
+        if not row[0]:
+            who_dict[row[1]] = {dates[i]:int(row[i]) for i in range(4,len(row))}
+        else:
+            who_dict[row[0]] = {dates[i]:int(row[i]) for i in range(4,len(row))}
+            if row[1] in who_dict:
+                for date in who_dict[row[0]]: 
+                    who_dict[row[1]][date] += who_dict[row[0]][date]
+            else: 
+                who_dict[row[1]] = who_dict[row[0]].copy()
 
-    dates = []
-    csvArray = []
-    with open(confirmed_file, 'r') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',')
-        for row in spamreader:
-            if row:
-                csvArray.append(row)
 
-    for d in csvArray[0][4:]:
-        arr = d.split("/")
-        if len(arr[0]) == 1:
-            arr[0] = '0'+arr[0] 
-        if len(arr[1]) == 1:
-            arr[1] = '0'+arr[1] 
-        if len(arr[2]) == 2:
-            arr[2] = '20'+arr[2]
-        dates.append(arr[2]+'-'+arr[0]+'-'+arr[1])
-    del csvArray[0][4:]
-    csvArray[0].append("Date")
-
-    newArray = [csvArray[0]]
-    for row in csvArray[1:]:
-        for column in range(4,len(row)):
-            newArray.append(row[:4]+[dates[column-4]]+[row[column]])
-    
-    toret = {}
-    for row in newArray[1:]:
-        key = row[0] + '-' + row[1]
-        if key not in toret:
-            toret[key] = {}
-        toret[key][row[4]] = row[5]
-
-    return toret
-
+    return who_dict
 
 if __name__ == '__main__':
     crawl()

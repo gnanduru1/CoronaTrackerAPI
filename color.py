@@ -1,4 +1,4 @@
-import csv, os
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -12,7 +12,7 @@ import json
 #Reads the csv file then puts the values into regionDict. This is sorted in the following way -> 
 #regionDict["region, country"] = [(coordinates), (date, number of cases) <- for every date that is given]
 
-printFile = 'color.csv'
+printFile = 'color.json'
 
 def run(file, typeOfDisplay, typeOfAnalysis):
     regionDict = {}
@@ -23,7 +23,7 @@ def run(file, typeOfDisplay, typeOfAnalysis):
     for place in tempDict:
         regionDict[place] = []
         for date in tempDict[place]:
-            regionDict[place].append((date, tempDict[place][date]["confirmed"]))
+            regionDict[place].append((date, tempDict[place][date]))
     
     retDict = {}
     for place in regionDict:
@@ -57,11 +57,11 @@ def run(file, typeOfDisplay, typeOfAnalysis):
                     color = 5/6
                     meaning = "Cases decreasing by more and more"
                 color = str(numToColor(color))
-                retDict[i] = (color.replace(" ", ""), meaning)
+                retDict[i] = color.replace(" ", "")
         else:
             for i in retDict:
                 color = str(numToColor(float(retDict[i])))
-                retDict[i] = (color.replace(" ", ""), "Meaning to be determined")
+                retDict[i] = color.replace(" ", "")
     
     elif typeOfDisplay == "Relative":
         newArray = []
@@ -77,21 +77,9 @@ def run(file, typeOfDisplay, typeOfAnalysis):
         for i in range(len(sortedArray)):
             for place in sortedArray[i]:
                 color = str(numToColor(1-((i+1)/6)))
-                retDict[place[1]] = (color.replace(" ", ""), "Meaning to be determined")
+                retDict[place[1]] = color.replace(" ", "")
 
-    with open(printFile, 'a+', newline='') as csv_file:
-        csv_writer = csv.writer(csv_file, delimiter='#')
-        for place in retDict:
-            if '-' in place:
-                temp = [place[:place.index('-')], place[place.index('-')+1:]]
-            else:
-                temp = ["",place]
-            csv_writer.writerow(temp + [retDict[place][0], retDict[place][1]])
-    # elif typeOfDisplay == "Relative":
-    
-    # else:
-
-    return retDict
+    with open(printFile, 'w') as f: json.dump(retDict, f, ensure_ascii=False)
 
 def displayRegion(region, regionDict, t):
     data = sorted(regionDict[region][::-1])
@@ -264,10 +252,7 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 #Uncomment to show graph
 #plt.show()
 def crawl():
-    with open(printFile, 'w', newline='') as csv_file:
-        csv_writer = csv.writer(csv_file, delimiter='#')
     run("global.json", "Relative", "linear")
-
 
 if __name__ == '__main__':
     crawl()

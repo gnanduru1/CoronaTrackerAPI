@@ -21,54 +21,57 @@ toUse = ['dow_jones_global_dow', 'Dow Jones', 'NASDAQ 100', 'NASDAQ Composite', 
     'AEX', 'CAC 40', 'FTSE 100', 'IBEX 35', 'OMX', 'SMI', 'BOVESPA', 'BSX', 'IGPA', 'IBC', 'BVQ', 
     'BET', 'BUX', 'PX', 'RTS', 'RTX', 'SAX', 'EGX30', 'KSE 100', 'NSE', 'asx', 
     'Hang Seng', 'KOSPI', 'NIKKEI 225', 'SENSEX', 'Shanghai Composite']
+
 daniel = 'C:/Users/Daniel/Desktop/chromedriver.exe'
 ganesh = r"C:\Users\Ganes\Downloads\chromedriver"
-director = "./chromedriver"
+stock_file = 'historic_stocks.json'
 
 driver = webdriver.Chrome(ganesh)
-stock_file = "historic_stocks.csv"
-
-with open(stock_file, 'w', newline='') as csvfile:
-        stWriter = csv.writer(csvfile, delimiter=',')
-        stWriter.writerow(["Index", "Date", "Closing Price"])
 
 count = 0
-for index in toUse:
-    temp = index.lower().replace(" ","_")
 
-    today = date.today()
-    today = str(today)
-    year = today[:4]
-    month = today[5:7]
-    day = today[-2:]
-    d = "{}.{}.{}".format(day, month, year)
+try:
+    with open(stock_file, 'r') as f:
+            dct = json.load(f)
+except:
+    pass
 
+try:
+    for index in toUse:
+        temp = index.lower().replace(" ","_")
 
-    stock_url = "https://markets.businessinsider.com/index/historical-prices/{}/1.1.2020_{}".format(temp, d)
-    print (temp)
+        today = str(date.today())
+        year, month, day = today[:4], today[5:7], today[-2:]
+        d = "{}.{}.{}".format(day, month, year)
 
-    driver.get(stock_url)
+        stock_url = "https://markets.businessinsider.com/index/historical-prices/{}/1.1.2020_{}".format(temp, d)
+        print (temp)
 
-    python_button = WebDriverWait(driver, 20).until(
-    EC.element_to_be_clickable((By.XPATH, '//*[@id="request-historic-price"]')))
-    python_button.click()
-    time.sleep(1)
+        driver.get(stock_url)
 
-    data = []
-    for table in driver.find_elements_by_xpath('//*[@id="historic-price-list"]//tr')[1:]:
-        data.append([indicies[count]] + [item.text for item in table.find_elements_by_xpath(".//*[self::td or self::th]")])
+        python_button = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="request-historic-price"]')))
+        python_button.click()
+        time.sleep(1)
 
-    with open(stock_file, 'a+', newline='') as csvfile:
-            stWriter = csv.writer(csvfile, delimiter=',')
-            for d in data:
-                month = d[1][:d[1].index('/')]
-                if len(month) == 1: month = '0' + month
-                temp = d[1][d[1].index('/')+1:]
-                day = temp[:temp.index('/')] 
-                if len(day) == 1: day = '0' + day
-                d[1] = d[1][-4:] + '-' + month + '-' + day
-                stWriter.writerow(d[0:3])
-    
-    count += 1
+        data = []
+        for table in driver.find_elements_by_xpath('//*[@id="historic-price-list"]//tr')[1:]:
+            data.append([indicies[count]] + [item.text for item in table.find_elements_by_xpath(".//*[self::td or self::th]")])
         
-driver.quit()
+        for d in data:
+            month = d[1][:d[1].index('/')]
+            if len(month) == 1: month = '0' + month
+            temp = d[1][d[1].index('/')+1:]
+            day = temp[:temp.index('/')] 
+            if len(day) == 1: day = '0' + day
+            d[1] = d[1][-4:] + '-' + month + '-' + day
+            
+            if d[0] not in dct: dct[d[0]] = {d[1]:d[2]}
+            else: dct[d[0]][d[1]] = d[2]        
+        count += 1
+except:
+    pass
+finally:
+    with open(stock_file, 'w') as f:
+        json.dump(dct, f)
+    driver.quit()
