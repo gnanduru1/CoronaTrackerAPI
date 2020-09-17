@@ -77,9 +77,6 @@ def parse_csv_france(url):
     return dct
     
 def crawl():
-    print(parse_csv_spain(spain_url).keys())
-    exit()
-
     all_data = {}
     all_data.update(parse_csv_italy(italy_url))
     all_data.update(parse_csv_uk(uk_url))
