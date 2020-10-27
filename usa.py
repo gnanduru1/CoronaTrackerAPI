@@ -75,6 +75,7 @@ def crawl():
     for row in csvreader:
         cases = int(row[3])
         date = row[0]
+        date = date[5:7]+'/'+date[8:]+'/'+date[2:4]
         province = row[1]
 
         if province in dct: dct[province][date] = cases
@@ -89,12 +90,13 @@ def crawl():
     for row in csvreader:
         if not row[2]: continue
         province = ABB[row[1]]
-        date = row[0][:4]+'-'+row[0][4:6]+'-'+row[0][6:]
+        date = row[0][4:6]+'/'+row[0][6:]+'/'+row[0][:2]
         if province not in dct:
             dct[province] = {date:int(row[2])}
         elif date not in dct[province] or 'A' in row[12]:
             updated += 1
             dct[province][date] = int(row[2])
+            
     return [dct, {'United States of America'}, {'United States of America'}]
 
 

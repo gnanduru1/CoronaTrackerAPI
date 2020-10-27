@@ -16,6 +16,8 @@ def parse_csv_italy(url):
     dct = {}
     for row in csvreader:
         date = row[0][:10]
+        date = date[5:7]+'/'+date[8:]+'/'+date[2:4]
+
         province = row[5]
         cases = int(row[-2])
 
@@ -34,6 +36,8 @@ def parse_csv_uk(url):
         cases = int(row[4])
 
         date = row[0]
+        date = date[5:7]+'/'+date[8:]+'/'+date[2:4]
+
         province = row[3]
         
 
@@ -52,6 +56,8 @@ def parse_csv_spain(url):
         cases = int(float(row[2]))
 
         date = row[1]
+        date = date[5:7]+'/'+date[8:]+'/'+date[2:4]
+
         province = row[0]
 
         if province in dct: dct[province][date] = cases
@@ -71,6 +77,9 @@ def parse_csv_france(url):
             continue
         province = regionLookup[row[0]]
         date = row[2]
+        if '/' in date: date = date[3:5]+'/'+date[:2]+'/'+date[6:8]
+        elif '-' in date: date = date[5:7]+'/'+date[8:]+'/'+date[2:4]
+
         cases = int(row[3])+int(row[4])
         if province in dct: dct[province][date] = cases
         else: dct[province] = {date: cases}
@@ -82,7 +91,7 @@ def crawl():
     all_data.update(parse_csv_uk(uk_url))
     all_data.update(parse_csv_spain(spain_url))
     all_data.update(parse_csv_france(france_url))
-
+    
     return [all_data, {'France', 'Spain', 'Italy', 'United Kingdom'}, {'France', 'Spain', 'Italy', 'United Kingdom'}]
 
 if __name__ == '__main__':

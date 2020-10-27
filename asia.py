@@ -16,6 +16,7 @@ def parse_csv_india(url):
     dct = {}
     for row in csvreader:
         date = row[0]
+        date = date[5:7]+'/'+date[8:]+'/'+date[2:4]
         province = row[1]
         cases = int(float(row[4]))
 
@@ -26,6 +27,7 @@ def parse_csv_india(url):
 def crawl():
     asiaDict = {}    
     asiaDict.update(parse_csv_india(india_url))
+
     return [asiaDict, {'India'}, {'India'}]
     
 if __name__ == '__main__':

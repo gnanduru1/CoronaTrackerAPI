@@ -23,7 +23,6 @@ def crawl():
                     who_dict[row[1]][date] += who_dict[row[0]][date]
             else:
                 who_dict[row[1]] = who_dict[row[0]].copy()
-
     return [who_dict, countries, big_countries]
 
 if __name__ == '__main__':

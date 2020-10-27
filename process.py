@@ -1,4 +1,4 @@
-import os, csv, json, io
+import os, csv, json, io, datetime
 import who, europe, asia, usa
 import econ, stocks, color
 from shutil import copyfile
@@ -128,6 +128,7 @@ def customConfig(countries):
 def moveFiles():
     for i in ['color.json', 'countries_110.json', 'currency_country.json', 'curr_code_to_name.json', 'default.json', 'exchange_rate_global.json', 'global.json', 'historic_stocks.json', 'status.json', 'stocks.json', 'stock_countries.json', 'big_countries.json']:
         copyfile(i, 'data/'+i)
+        copyfile(i, r'C:\Users\Ganes\Downloads\Projects\CoronaTracker\src\data/'+i)
 
 if __name__ == '__main__':
     cases()
@@ -135,5 +136,18 @@ if __name__ == '__main__':
     econ.crawl()
     stocks.crawl()
     color.crawl()
+
+    # CHANGE UPON 2021
+    with io.open('global.json', mode='r', encoding='utf-8') as f:
+        bigDict = json.load(f)        
+        for region in {i for i in bigDict.keys()}:
+            newKeys = sorted(list(bigDict[region].keys()), key=lambda date: datetime.datetime.strptime(date, "%m/%d/%y"))
+            for date in newKeys:
+                if '-' in date: 
+                    print('REEEEEEEEEEEEEEEEEEEEEEEEEE')
+                    exit()
+                bigDict[region][date[:-3]] = bigDict[region].pop(date)
+    with io.open('global.json', mode='w', encoding='utf-8') as f: 
+        json.dump(bigDict, f)
 
     moveFiles() 
