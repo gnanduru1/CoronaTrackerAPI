@@ -143,9 +143,6 @@ if __name__ == '__main__':
         for region in {i for i in bigDict.keys()}:
             newKeys = sorted(list(bigDict[region].keys()), key=lambda date: datetime.datetime.strptime(date, "%m/%d/%y"))
             for date in newKeys:
-                if '-' in date: 
-                    print('REEEEEEEEEEEEEEEEEEEEEEEEEE')
-                    exit()
                 bigDict[region][date[:-3]] = bigDict[region].pop(date)
     with io.open('global.json', mode='w', encoding='utf-8') as f: 
         json.dump(bigDict, f)
