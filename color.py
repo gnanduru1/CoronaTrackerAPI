@@ -100,7 +100,7 @@ def displayRegion(region, regionDict, t):
     for i in range(1,len(y)):
         changeY.append(y[i]-y[i-1])
 
-    daysBack = 10
+    daysBack = 15
     if x and y and changeY:
         if t == "linear":
             temp = linearFit(x,y,changeY,daysBack)
@@ -145,6 +145,7 @@ def linearFit(x,y,changeY, daysBack):
         newY = newY[:-len(newChangeY)]
 
     avg = (sum([x for x in newChangeY]))
+    return (max(newY) - min(newY))/(max(newY))
     
     if newY[-1] == 0:
         changeNum = -3
