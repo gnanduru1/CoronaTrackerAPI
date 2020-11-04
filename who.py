@@ -12,17 +12,20 @@ def crawl():
     countries = {'Greenland'}
     big_countries = set()
     for row in csvreader:
-        countries.add(row[1])
+        country = row[1]
+        if country == 'Georgia': country += ' (Country)'
+
+        countries.add(country)
         if not row[0]:
-            who_dict[row[1]] = {dates[i]:int(row[i]) for i in range(4,len(row))}
+            who_dict[country] = {dates[i]:int(row[i]) for i in range(4,len(row))}
         else:
-            big_countries.add(row[1])
+            big_countries.add(country)
             who_dict[row[0]] = {dates[i]:int(row[i]) for i in range(4,len(row))}
-            if row[1] in who_dict:
+            if country in who_dict:
                 for date in who_dict[row[0]]: 
-                    who_dict[row[1]][date] += who_dict[row[0]][date]
+                    who_dict[country][date] += who_dict[row[0]][date]
             else:
-                who_dict[row[1]] = who_dict[row[0]].copy()
+                who_dict[country] = who_dict[row[0]].copy()
     return [who_dict, countries, big_countries]
 
 if __name__ == '__main__':
