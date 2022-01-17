@@ -19,7 +19,7 @@ def parse_csv_italy(url):
         date = date[5:7]+'/'+date[8:]+'/'+date[2:4]
 
         province = row[5]
-        cases = int(row[-2])
+        cases = int(row[-5])
 
         if province in dct: dct[province][date] = cases
         else: dct[province] = {date: cases}
@@ -73,7 +73,7 @@ def parse_csv_france(url):
 
     dct = {}
     for row in csvreader:
-        if not row[0]:
+        if row[0] not in regionLookup:
             continue
         province = regionLookup[row[0]]
         date = row[2]

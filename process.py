@@ -46,7 +46,7 @@ convertDictOld = {'Dominican Rep.': 'Dominican Republic',
  'MS Zaandam': 'United Kingdom', # British owned cruise
 }
 convertDict = {'Tanzania': 'United Republic of Tanzania', 'Taiwan*': 'Taiwan', "Cote d'Ivoire": 'Ivory Coast', 'Congo (Kinshasa)': 'Democratic Republic of the Congo', 'Congo (Brazzaville)': 'Republic of the Congo', 'Bahamas': 'The Bahamas', 'North Macedonia': 'Macedonia', 'US': 'United States of America', 'Timor-Leste': 'East Timor', 'Guinea-Bissau': 'Guinea Bissau', 'Cabo Verde': 'Cape Verde', 'Eswatini': 'Swaziland', 'Burma': 'Myanmar', 'Czechia': 'Czech Republic', 'Korea, South': 'South Korea', 'West Bank and Gaza': 'Palestine', 'Holy See': 'Vatican'}
-unmapped = {'Diamond Princess', 'MS Zaandam'}
+unmapped = {'Diamond Princess', 'MS Zaandam', 'Micronesia', 'Summer Olympics 2020'}
 
 def cases():
     global convertDict
@@ -87,13 +87,22 @@ def cases():
         if key in big_countries:
             big_countries.remove(key)
             big_countries.add(convertDict[key])
+    
+    smallDict = {}
+    for i in bigDict.keys():
+        lst = list(bigDict[i].items())
+        lst = lst[::len(lst)//25 or 1]
+        smallDict[i] = dict(lst)
 
     print("Initialized",len(bigDict),"regions")
 
-    with io.open('global.json',mode='w',encoding='utf-8') as f:
+    with io.open('data/global.json',mode='w',encoding='utf-8') as f:
+        json.dump(smallDict,f,ensure_ascii=False)
+    
+    with io.open('data/all.json',mode='w',encoding='utf-8') as f:
         json.dump(bigDict,f,ensure_ascii=False)
 
-    with open('big_countries.json', 'w') as f:
+    with open('data/big_countries.json', 'w') as f:
         json.dump(list(big_countries), f)  
 
     customConfig(countries)
@@ -104,16 +113,16 @@ def createStatus(dct):
     for name in dct:
         status[name] = dct[name][list(dct[name].keys())[-1]]
 
-    with io.open('status.json', mode='w', encoding='utf-8') as f:
+    with io.open('data/status.json', mode='w', encoding='utf-8') as f:
         json.dump(status, f)
 
 def convert():
     for i in ['color.json', 'status.json', 'global.json']:
-        with io.open(i, mode='r', encoding='utf-8') as f:
+        with io.open('data/'+i, mode='r', encoding='utf-8') as f:
             text = f.read()
         for j in convertDict:
             text = text.replace(j, convertDict[j])
-        with io.open(i, mode='r', encoding='utf-8') as f:
+        with io.open('data/'+i, mode='r', encoding='utf-8') as f:
             f.write(text)
     print("Converted")
 
@@ -122,29 +131,18 @@ def customConfig(countries):
     for i in countries:
         with open('countries/'+i+'.json', 'r') as f:
             custom[i] = json.load(f)
-    with io.open('default.json', mode='w', encoding='utf-8') as f:
+    with io.open('data/default.json', mode='w', encoding='utf-8') as f:
         json.dump(custom, f)
 
 def moveFiles():
-    for i in ['color.json', 'countries_110.json', 'currency_country.json', 'curr_code_to_name.json', 'default.json', 'exchange_rate_global.json', 'global.json', 'historic_stocks.json', 'status.json', 'stocks.json', 'stock_countries.json', 'big_countries.json']:
-        copyfile(i, 'data/'+i)
-        copyfile(i, r'C:\Users\Ganes\Downloads\Projects\CoronaTracker\src\data/'+i)
+    for i in ['color.json', 'countries_110.json', 'default.json', 'global.json', 'status.json', 'big_countries.json']:
+        copyfile('data/'+i, 'C:/Users/Ganes/CoronaTracker/src/data/'+i)
 
 if __name__ == '__main__':
     cases()
 
-    econ.crawl()
-    stocks.crawl()
-    color.crawl()
-
-    # CHANGE UPON 2021
-    with io.open('global.json', mode='r', encoding='utf-8') as f:
-        bigDict = json.load(f)        
-        for region in {i for i in bigDict.keys()}:
-            newKeys = sorted(list(bigDict[region].keys()), key=lambda date: datetime.datetime.strptime(date, "%m/%d/%y"))
-            for date in newKeys:
-                bigDict[region][date[:-3]] = bigDict[region].pop(date)
-    with io.open('global.json', mode='w', encoding='utf-8') as f: 
-        json.dump(bigDict, f)
+   # econ.crawl()
+   # stocks.crawl()
+    color.run()
 
     moveFiles() 
