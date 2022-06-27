@@ -7,6 +7,3 @@ __pycache__/
 node_modules/
 *.exe
 *.zip
-
-login.json
-helper.py
